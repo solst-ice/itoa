@@ -539,3 +539,54 @@ body {
     transform: translateX(-1px);
   }
 }
+
+/* Add mobile media query for simpler title animation */
+@media (max-width: 768px) {
+  .title {
+    animation: mobile-title-color 4s infinite;
+  }
+
+  /* Remove the complex glitch effects on mobile */
+  .title::before,
+  .title::after {
+    display: none;
+  }
+
+  /* Simple color shift animation for mobile */
+  @keyframes mobile-title-color {
+    0%, 100% {
+      color: var(--neon-pink);
+      text-shadow: 0 0 5px var(--neon-pink);
+    }
+    50% {
+      color: var(--neon-blue);
+      text-shadow: 0 0 5px var(--neon-blue);
+    }
+  }
+}
+
+/* Keep existing desktop animations */
+@media (min-width: 769px) {
+  .title {
+    animation: crt-flicker 8s infinite;
+  }
+
+  .title::before,
+  .title::after {
+    content: 'ITOA: Image to ASCII Converter';
+    position: absolute;
+    left: 0;
+    right: 0;
+    background: var(--dark-bg);
+  }
+
+  .title::before {
+    text-shadow: 2px 0 var(--neon-blue);
+    animation: glitch-1 6s infinite linear alternate-reverse;
+  }
+
+  .title::after {
+    text-shadow: -2px 0 var(--neon-pink);
+    animation: glitch-2 4s infinite linear alternate-reverse;
+  }
+}

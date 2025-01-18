@@ -1,6 +1,10 @@
 import { useState, useCallback, useEffect, useRef } from 'react'
 import './App.css'
 
+function isMobileDevice() {
+  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+}
+
 function updateFavicon(color) {
   const canvas = document.createElement('canvas')
   canvas.width = 32
@@ -36,7 +40,7 @@ function App() {
   const [colorAsciiArt, setColorAsciiArt] = useState('')
   const [isDragging, setIsDragging] = useState(false)
   const [useColor, setUseColor] = useState(false)
-  const [size, setSize] = useState('medium')
+  const [size, setSize] = useState(isMobileDevice() ? 'small' : 'medium')
   const fileInputRef = useRef(null)
 
   const sizeMap = {
@@ -225,11 +229,43 @@ function App() {
       })
     }
 
-    // Create download link
-    const link = document.createElement('a')
-    link.download = 'ascii-art.png'
-    link.href = canvas.toDataURL('image/png')
-    link.click()
+    if (isMobileDevice()) {
+      // For mobile devices: save to photo gallery
+      canvas.toBlob((blob) => {
+        try {
+          // Try the new Native Share API first
+          if (navigator.share) {
+            const file = new File([blob], 'ascii-art.png', { type: 'image/png' })
+            navigator.share({
+              files: [file],
+              title: 'ASCII Art',
+              text: 'Created with ITOA'
+            }).catch(console.error)
+          } else {
+            // Fallback: try to save directly to gallery
+            const imageUrl = canvas.toDataURL('image/png')
+            const link = document.createElement('a')
+            link.download = 'ascii-art.png'
+            link.href = imageUrl
+            link.click()
+          }
+        } catch (error) {
+          console.error('Error saving image:', error)
+          // Fallback to normal download if sharing fails
+          const link = document.createElement('a')
+          link.download = 'ascii-art.png'
+          link.href = URL.createObjectURL(blob)
+          link.click()
+          setTimeout(() => URL.revokeObjectURL(link.href), 100)
+        }
+      }, 'image/png')
+    } else {
+      // For desktop: normal file download
+      const link = document.createElement('a')
+      link.download = 'ascii-art.png'
+      link.href = canvas.toDataURL('image/png')
+      link.click()
+    }
   }
 
   // Add favicon animation
