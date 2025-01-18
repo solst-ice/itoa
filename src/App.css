@@ -735,7 +735,7 @@ body {
   cursor: move;
   scrollbar-width: none;
   -ms-overflow-style: none;
-  padding: 20%;  /* Add padding to allow scrolling to edges */
+  padding: 0;
 }
 
 .drop-zone.zoomed .ascii-output {
@@ -743,10 +743,11 @@ body {
   max-width: none;
   max-height: none;
   transform: scale(var(--zoom-scale, 1));
-  transform-origin: 0 0;  /* Change to top-left corner */
+  transform-origin: 0 0;
   transition: transform 0.3s ease;
-  margin: auto;  /* Center the content */
-  display: inline-block;  /* Allow content to maintain size */
+  padding: 20px;
+  display: inline-block;
+  margin: 0;
 }
 
 /* Remove duplicate styles */

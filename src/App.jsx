@@ -62,27 +62,33 @@ function App() {
     const dropZone = document.querySelector('.drop-zone')
     const MAX_ASCII_SIZE = sizeMap[size]
     
-    // Calculate dimensions while maintaining aspect ratio
+    // Calculate dimensions while preserving exact aspect ratio
     const aspectRatio = img.width / img.height
     let charWidth, charHeight
     
-    if (aspectRatio > 1) {
+    // Account for character aspect ratio (typically 0.6)
+    const charAspectRatio = 0.6
+    const adjustedAspectRatio = aspectRatio / charAspectRatio
+
+    if (adjustedAspectRatio > 1) {
+      // Landscape - use max width
       charWidth = MAX_ASCII_SIZE
-      charHeight = Math.floor(MAX_ASCII_SIZE / aspectRatio)
+      charHeight = Math.round(charWidth / adjustedAspectRatio)
     } else {
+      // Portrait - use max height
       charHeight = MAX_ASCII_SIZE
-      charWidth = Math.floor(MAX_ASCII_SIZE * aspectRatio)
+      charWidth = Math.round(charHeight * adjustedAspectRatio)
     }
 
     // Calculate font sizes that would fit each dimension
-    const horizontalFontSize = dropZone.clientWidth / (charWidth * 0.6)
+    const horizontalFontSize = dropZone.clientWidth / (charWidth * charAspectRatio)
     const verticalFontSize = dropZone.clientHeight / charHeight
 
-    // Use the smaller font size to ensure no cropping
+    // Use the smaller font size to ensure no cropping while maintaining aspect ratio
     const fontSize = Math.min(horizontalFontSize, verticalFontSize)
 
     // Calculate actual dimensions after applying font size
-    const actualWidth = charWidth * fontSize * 0.6
+    const actualWidth = charWidth * fontSize * charAspectRatio
     const actualHeight = charHeight * fontSize
 
     // Center the output
@@ -190,12 +196,19 @@ function App() {
 
     const canvas = document.createElement('canvas')
     const ctx = canvas.getContext('2d')
-    const asciiDiv = document.querySelector('.ascii-output')
     
-    // Increase scale factor significantly for higher resolution
-    const scale = 8 // Increased from 2 to 8
-    canvas.width = asciiDiv.offsetWidth * scale
-    canvas.height = asciiDiv.offsetHeight * scale
+    // Get the number of characters in width and height
+    const lines = asciiArt.split('\n').filter(line => line.length > 0) // Remove empty lines
+    const charHeight = lines.length
+    const charWidth = lines[0].length
+
+    // Set a base scale for high resolution
+    const baseScale = 32 // pixels per character
+    const charAspectRatio = 0.6 // Monospace character width/height ratio
+
+    // Set canvas size to exactly fit the ASCII art
+    canvas.width = Math.ceil(charWidth * baseScale * charAspectRatio)
+    canvas.height = Math.ceil(charHeight * baseScale)
 
     // Draw background
     ctx.fillStyle = '#0a0a0f'
@@ -205,44 +218,33 @@ function App() {
     ctx.textRendering = 'geometricPrecision'
     ctx.imageSmoothingEnabled = true
     ctx.imageSmoothingQuality = 'high'
-    
-    // Scale everything up
-    ctx.scale(scale, scale)
 
-    // Draw ASCII art with improved settings
-    const fontSize = parseInt(window.getComputedStyle(asciiDiv).fontSize)
+    // Calculate font size to exactly fit the characters
+    const fontSize = baseScale
     ctx.font = `bold ${fontSize}px "Courier New"`
     ctx.textBaseline = 'top'
     ctx.textAlign = 'left'
-    ctx.letterSpacing = '0px' // Ensure consistent character spacing
+    ctx.letterSpacing = '0px'
 
     if (useColor) {
       // For color mode
       const tempDiv = document.createElement('div')
       tempDiv.innerHTML = colorAsciiArt
       const pre = tempDiv.querySelector('pre')
-      const text = pre.textContent
-      const lines = text.split('\n')
-      const charWidth = fontSize * 0.6
-
-      // Get all spans with their colors
       const spans = Array.from(pre.querySelectorAll('span'))
       let spanIndex = 0
 
-      // Draw line by line with improved contrast
       lines.forEach((line, lineIndex) => {
         for (let charIndex = 0; charIndex < line.length; charIndex++) {
           if (spanIndex < spans.length) {
             const span = spans[spanIndex]
-            // Brighten the colors slightly
             const color = span.style.color
             const rgb = color.match(/\d+/g)
             const brightenedColor = `rgb(${Math.min(255, parseInt(rgb[0]) * 1.3)}, ${Math.min(255, parseInt(rgb[1]) * 1.3)}, ${Math.min(255, parseInt(rgb[2]) * 1.3)})`
             ctx.fillStyle = brightenedColor
-            // Draw each character with precise positioning
             ctx.fillText(
               span.textContent,
-              Math.round(charIndex * charWidth), // Round to prevent subpixel rendering
+              Math.round(charIndex * fontSize * charAspectRatio),
               Math.round(lineIndex * fontSize)
             )
             spanIndex++
@@ -250,16 +252,14 @@ function App() {
         }
       })
     } else {
-      // For monochrome mode with improved contrast
+      // For monochrome mode
       ctx.fillStyle = '#ff2b9d'
-      const lines = asciiArt.split('\n')
       lines.forEach((line, i) => {
-        // Draw each line with precise positioning
         ctx.fillText(line, 0, Math.round(i * fontSize))
       })
     }
 
-    // Create download with the high-res canvas
+    // Save with max quality
     if (isMobileDevice()) {
       canvas.toBlob((blob) => {
         try {
