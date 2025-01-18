@@ -1,0 +1,541 @@
+:root {
+  --neon-pink: #ff2b9d;
+  --neon-blue: #00f3ff;
+  --dark-bg: #0a0a0f;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--dark-bg);
+  font-family: 'Courier New', monospace;
+  color: var(--neon-blue);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.app-container {
+  width: 100%;
+  max-width: 2000px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.5rem;
+  padding: 1rem;
+  height: 100vh;
+  box-sizing: border-box;
+}
+
+.title {
+  font-size: 1.2rem;
+  margin: 0 0 1.5rem 0;
+  color: var(--neon-pink);
+  letter-spacing: 0.2rem;
+  text-align: center;
+  position: relative;
+  animation: crt-flicker 8s infinite;
+}
+
+.title::before,
+.title::after {
+  content: 'ITOA: Image to ASCII Converter';
+  position: absolute;
+  left: 0;
+  right: 0;
+  background: var(--dark-bg);
+}
+
+.title::before {
+  text-shadow: 2px 0 var(--neon-blue);
+  animation: glitch-1 6s infinite linear alternate-reverse;
+}
+
+.title::after {
+  text-shadow: -2px 0 var(--neon-pink);
+  animation: glitch-2 4s infinite linear alternate-reverse;
+}
+
+@keyframes crt-flicker {
+  0% {
+    text-shadow: 0 0 5px var(--neon-pink);
+  }
+  3% {
+    text-shadow: 
+      0 0 10px var(--neon-pink),
+      0 0 20px var(--neon-pink);
+  }
+  4% {
+    text-shadow: none;
+  }
+  6% {
+    text-shadow: 
+      0 0 10px var(--neon-pink),
+      0 0 20px var(--neon-pink);
+  }
+  7% {
+    text-shadow: 0 0 5px var(--neon-pink);
+  }
+  8% {
+    text-shadow: none;
+  }
+  9% {
+    text-shadow: 0 0 5px var(--neon-pink);
+  }
+  10% {
+    text-shadow: none;
+  }
+  11% {
+    text-shadow: 0 0 5px var(--neon-pink);
+  }
+  50% {
+    text-shadow: 0 0 5px var(--neon-pink);
+  }
+  51% {
+    text-shadow: none;
+  }
+  52% {
+    text-shadow: 0 0 5px var(--neon-pink);
+  }
+  100% {
+    text-shadow: 0 0 5px var(--neon-pink);
+  }
+}
+
+@keyframes glitch-1 {
+  0% {
+    clip-path: inset(20% -6px 70% 0);
+  }
+  10% {
+    clip-path: inset(80% -6px 5% 0);
+  }
+  20% {
+    clip-path: inset(20% -6px 85% 0);
+  }
+  30% {
+    clip-path: inset(0% -6px 50% 0);
+  }
+  40% {
+    clip-path: inset(60% -6px 30% 0);
+  }
+  50% {
+    clip-path: inset(10% -6px 85% 0);
+  }
+  60% {
+    clip-path: inset(40% -6px 43% 0);
+  }
+  70% {
+    clip-path: inset(5% -6px 95% 0);
+  }
+  80% {
+    clip-path: inset(70% -6px 20% 0);
+  }
+  90% {
+    clip-path: inset(20% -6px 60% 0);
+  }
+  100% {
+    clip-path: inset(60% -6px 40% 0);
+  }
+}
+
+@keyframes glitch-2 {
+  0% {
+    clip-path: inset(40% 0 60% -6px);
+  }
+  10% {
+    clip-path: inset(20% 0 80% -6px);
+  }
+  20% {
+    clip-path: inset(60% 0 20% -6px);
+  }
+  30% {
+    clip-path: inset(80% 0 5% -6px);
+  }
+  40% {
+    clip-path: inset(10% 0 90% -6px);
+  }
+  50% {
+    clip-path: inset(50% 0 30% -6px);
+  }
+  60% {
+    clip-path: inset(30% 0 60% -6px);
+  }
+  70% {
+    clip-path: inset(70% 0 20% -6px);
+  }
+  80% {
+    clip-path: inset(15% 0 80% -6px);
+  }
+  90% {
+    clip-path: inset(40% 0 50% -6px);
+  }
+  100% {
+    clip-path: inset(80% 0 20% -6px);
+  }
+}
+
+.subtitle {
+  font-size: 0.9rem;
+  margin: 0 0 0.5rem 0;
+  color: var(--neon-blue);
+  text-shadow: 0 0 5px var(--neon-blue);
+  text-align: center;
+}
+
+.drop-zone {
+  width: min(80vh, 80vw);
+  height: min(80vh, 80vw);
+  border: 2px dashed var(--neon-blue);
+  border-radius: 8px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: auto;
+  padding: 20px;
+  margin: 0 auto;
+  margin-top: 1rem;
+  box-sizing: border-box;
+}
+
+.drop-zone:hover {
+  border-color: var(--neon-pink);
+  box-shadow: 0 0 20px rgba(0, 243, 255, 0.2);
+}
+
+.dragging {
+  border-color: #ff0000 !important;
+  box-shadow: 0 0 30px rgba(255, 0, 0, 0.3) !important;
+  animation: glitch 0.3s infinite;
+}
+
+.drop-text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  font-size: 1.5rem;
+  color: var(--neon-blue);
+}
+
+.small-text {
+  font-size: 0.8rem;
+  opacity: 0.7;
+}
+
+.ascii-output {
+  padding: 0;
+  margin: 0 auto;
+  font-family: 'Courier New', monospace;
+  font-size: var(--ascii-font-size, 12px);
+  line-height: var(--ascii-line-height, 12px);
+  display: block;
+  text-align: center;
+}
+
+/* Monochrome style */
+.ascii-output:not(:has(div)) {
+  white-space: pre;
+  color: var(--neon-pink);
+}
+
+/* Color mode style */
+.ascii-output div {
+  white-space: nowrap;
+}
+
+.ascii-output span {
+  display: inline-block;
+}
+
+@keyframes glitch {
+  0% { transform: translate(0) }
+  20% { transform: translate(-2px, 2px) }
+  40% { transform: translate(-2px, -2px) }
+  60% { transform: translate(2px, 2px) }
+  80% { transform: translate(2px, -2px) }
+  100% { transform: translate(0) }
+}
+
+.controls {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.size-controls {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.control-btn {
+  background: transparent;
+  border: 1px solid var(--neon-blue);
+  color: var(--neon-blue);
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  font-family: 'Courier New', monospace;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+  position: relative;
+  text-transform: uppercase;
+  min-width: 120px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
+.control-btn:not(.active):hover {
+  border-color: var(--neon-pink);
+  color: var(--neon-pink);
+  position: relative;
+}
+
+.control-btn:not(.active):hover::before {
+  content: attr(data-text);
+  position: absolute;
+  left: 0;
+  right: 0;
+  text-align: center;
+  animation: text-flicker 2s linear infinite;
+}
+
+@keyframes text-flicker {
+  0%, 100% { 
+    opacity: 0;
+    text-shadow: none;
+  }
+  15% {
+    opacity: 1;
+    text-shadow: 
+      -1px 0 var(--neon-blue),
+      1px 0 var(--neon-pink);
+  }
+  17% {
+    opacity: 0;
+    text-shadow: none;
+  }
+  20% {
+    opacity: 1;
+    text-shadow: 
+      1px 0 var(--neon-blue),
+      -1px 0 var(--neon-pink),
+      0 0 20px rgba(255, 43, 157, 0.5);
+  }
+  22% {
+    opacity: 0;
+    text-shadow: none;
+  }
+  35% {
+    opacity: 1;
+    text-shadow: 
+      -1px 0 var(--neon-pink),
+      1px 0 var(--neon-blue),
+      0 0 20px rgba(0, 243, 255, 0.5);
+  }
+  37% {
+    opacity: 0;
+    text-shadow: none;
+  }
+  40% {
+    opacity: 1;
+    text-shadow: 
+      1px 0 var(--neon-pink),
+      -1px 0 var(--neon-blue);
+  }
+  42% {
+    opacity: 0;
+    text-shadow: none;
+  }
+  85% {
+    opacity: 1;
+    text-shadow: 
+      -1px 0 var(--neon-blue),
+      1px 0 var(--neon-pink),
+      0 0 20px rgba(255, 43, 157, 0.5);
+  }
+  87% {
+    opacity: 0;
+    text-shadow: none;
+  }
+}
+
+.control-btn.active {
+  background-image: linear-gradient(
+    to right,
+    #ff0000 0%,
+    #ff0000 16.67%,
+    #ff9900 16.67%,
+    #ff9900 33.33%,
+    #33ff00 33.33%,
+    #33ff00 50%,
+    #00ffcc 50%,
+    #00ffcc 66.67%,
+    #0099ff 66.67%,
+    #0099ff 83.33%,
+    #ff00ff 83.33%,
+    #ff00ff 100%
+  );
+  background-size: 24px 100%;
+  animation: pixel-rainbow 2s linear infinite;
+  color: var(--dark-bg);
+  border: none;
+  text-shadow: none;
+}
+
+@keyframes pixel-rainbow {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 24px 0;
+  }
+}
+
+/* Add this to remove default button highlight */
+.control-btn:focus {
+  outline: none;
+}
+
+/* Change button highlight on click */
+.control-btn:active {
+  background-color: var(--neon-pink);
+  color: var(--dark-bg);
+}
+
+.control-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  border-color: var(--neon-blue);
+  color: var(--neon-blue);
+}
+
+.control-btn:disabled:hover {
+  border-color: var(--neon-blue);
+  color: var(--neon-blue);
+}
+
+/* Add Matrix effect styles */
+.control-btn[data-text="Upload"]:hover {
+  border-color: #00ff00;
+  color: #00ff00;
+  background: linear-gradient(
+    180deg,
+    rgba(0, 255, 0, 0.1),
+    rgba(0, 255, 0, 0.05)
+  );
+  text-shadow: 0 0 5px #00ff00;
+  position: relative;
+  overflow: hidden;
+}
+
+.control-btn[data-text="Upload"]:hover::after {
+  content: "10101110101";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgba(0, 255, 0, 0.2) 50%,
+    transparent 100%
+  );
+  animation: matrix-rain 1s linear infinite;
+  font-family: monospace;
+  font-size: 10px;
+  line-height: 8px;
+  opacity: 0.5;
+  color: #00ff00;
+  pointer-events: none;
+}
+
+@keyframes matrix-rain {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(100%);
+  }
+}
+
+/* Add CRT effect for save button */
+.control-btn[data-text="Save"]:not(:disabled):hover {
+  border-color: #ff6600;
+  color: #ff6600;
+  text-shadow: 0 0 5px #ff6600;
+  position: relative;
+  overflow: hidden;
+  background: rgba(255, 102, 0, 0.1);
+}
+
+.control-btn[data-text="Save"]:not(:disabled):hover::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    #ff6600 20%,
+    #ff6600 80%,
+    transparent 100%
+  );
+  animation: crt-scan 1.5s linear infinite;
+  opacity: 1;
+  box-shadow: 
+    0 0 10px #ff6600,
+    0 0 20px #ff6600;
+  pointer-events: none;
+}
+
+.control-btn[data-text="Save"]:not(:disabled):hover::after {
+  content: "SAVE";
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-shadow: 2px 0 #ff0000, -2px 0 #00ffff;
+  animation: crt-glitch 0.05s infinite;
+  background: none;
+  z-index: 2;
+}
+
+@keyframes crt-scan {
+  from {
+    transform: translateY(-2px);
+  }
+  to {
+    transform: translateY(38px); /* Slightly more than button height */
+  }
+}
+
+@keyframes crt-glitch {
+  0%, 100% {
+    clip-path: inset(50% 0 50% 0);
+    transform: translateX(0);
+  }
+  25% {
+    clip-path: inset(20% 0 80% 0);
+    transform: translateX(-1px);
+  }
+  50% {
+    clip-path: inset(80% 0 20% 0);
+    transform: translateX(1px);
+  }
+  75% {
+    clip-path: inset(30% 0 70% 0);
+    transform: translateX(-1px);
+  }
+}
