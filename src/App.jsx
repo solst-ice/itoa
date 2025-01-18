@@ -48,7 +48,7 @@ function App() {
   const sizeMap = {
     small: 60,
     medium: 150,
-    large: 300
+    large: isMobileDevice() ? 225 : 300
   }
 
   const convertToAscii = useCallback(async (file) => {
@@ -62,8 +62,10 @@ function App() {
     const dropZone = document.querySelector('.drop-zone')
     const MAX_ASCII_SIZE = sizeMap[size]
     
+    // Calculate dimensions while maintaining aspect ratio
     const aspectRatio = img.width / img.height
     let charWidth, charHeight
+    
     if (aspectRatio > 1) {
       charWidth = MAX_ASCII_SIZE
       charHeight = Math.floor(MAX_ASCII_SIZE / aspectRatio)
@@ -71,7 +73,28 @@ function App() {
       charHeight = MAX_ASCII_SIZE
       charWidth = Math.floor(MAX_ASCII_SIZE * aspectRatio)
     }
-    
+
+    // Calculate font sizes that would fit each dimension
+    const horizontalFontSize = dropZone.clientWidth / (charWidth * 0.6)
+    const verticalFontSize = dropZone.clientHeight / charHeight
+
+    // Use the smaller font size to ensure no cropping
+    const fontSize = Math.min(horizontalFontSize, verticalFontSize)
+
+    // Calculate actual dimensions after applying font size
+    const actualWidth = charWidth * fontSize * 0.6
+    const actualHeight = charHeight * fontSize
+
+    // Center the output
+    const marginX = (dropZone.clientWidth - actualWidth) / 2
+    const marginY = (dropZone.clientHeight - actualHeight) / 2
+
+    // Apply the calculated values
+    document.documentElement.style.setProperty('--ascii-font-size', `${fontSize}px`)
+    document.documentElement.style.setProperty('--ascii-line-height', `${fontSize}px`)
+    document.documentElement.style.setProperty('--ascii-margin-x', `${marginX}px`)
+    document.documentElement.style.setProperty('--ascii-margin-y', `${marginY}px`)
+
     const canvas = document.createElement('canvas')
     const ctx = canvas.getContext('2d')
     canvas.width = charWidth
@@ -121,20 +144,6 @@ function App() {
       setAsciiArt(monoAscii)
       setColorAsciiArt(colorHtml)
       
-      // Set font size
-      const maxWidth = dropZone.clientWidth - 20
-      const maxHeight = dropZone.clientHeight - 20
-
-      // Calculate font size based on available space and character dimensions
-      const horizontalFontSize = maxWidth / (charWidth * 0.6) // 0.6 is char width/height ratio
-      const verticalFontSize = maxHeight / charHeight
-
-      // Use the smaller of the two to ensure fit, but multiply by 0.95 for safety margin
-      const fontSize = Math.floor(Math.min(horizontalFontSize, verticalFontSize) * 0.95)
-
-      document.documentElement.style.setProperty('--ascii-font-size', `${fontSize}px`)
-      document.documentElement.style.setProperty('--ascii-line-height', `${fontSize}px`)
-      
     } catch (error) {
       console.error('Error converting image to ASCII:', error)
     } finally {
@@ -183,8 +192,8 @@ function App() {
     const ctx = canvas.getContext('2d')
     const asciiDiv = document.querySelector('.ascii-output')
     
-    // Increase canvas size for better quality
-    const scale = 2 // Scale up for higher resolution
+    // Increase scale factor significantly for higher resolution
+    const scale = 8 // Increased from 2 to 8
     canvas.width = asciiDiv.offsetWidth * scale
     canvas.height = asciiDiv.offsetHeight * scale
 
@@ -205,6 +214,7 @@ function App() {
     ctx.font = `bold ${fontSize}px "Courier New"`
     ctx.textBaseline = 'top'
     ctx.textAlign = 'left'
+    ctx.letterSpacing = '0px' // Ensure consistent character spacing
 
     if (useColor) {
       // For color mode
@@ -227,12 +237,13 @@ function App() {
             // Brighten the colors slightly
             const color = span.style.color
             const rgb = color.match(/\d+/g)
-            const brightenedColor = `rgb(${Math.min(255, parseInt(rgb[0]) * 1.2)}, ${Math.min(255, parseInt(rgb[1]) * 1.2)}, ${Math.min(255, parseInt(rgb[2]) * 1.2)})`
+            const brightenedColor = `rgb(${Math.min(255, parseInt(rgb[0]) * 1.3)}, ${Math.min(255, parseInt(rgb[1]) * 1.3)}, ${Math.min(255, parseInt(rgb[2]) * 1.3)})`
             ctx.fillStyle = brightenedColor
+            // Draw each character with precise positioning
             ctx.fillText(
               span.textContent,
-              charIndex * charWidth,
-              lineIndex * fontSize
+              Math.round(charIndex * charWidth), // Round to prevent subpixel rendering
+              Math.round(lineIndex * fontSize)
             )
             spanIndex++
           }
@@ -243,7 +254,8 @@ function App() {
       ctx.fillStyle = '#ff2b9d'
       const lines = asciiArt.split('\n')
       lines.forEach((line, i) => {
-        ctx.fillText(line, 0, i * fontSize)
+        // Draw each line with precise positioning
+        ctx.fillText(line, 0, Math.round(i * fontSize))
       })
     }
 
@@ -308,6 +320,9 @@ function App() {
   return (
     <div className="app-container">
       <h1 className="title">ITOA: Image to ASCII Converter</h1>
+      <div className="credit">
+        // by <a href="http://x.com/IceSolst" target="_blank" rel="noopener noreferrer">solst/ICE</a>
+      </div>
       
       <div className="controls">
         <button 

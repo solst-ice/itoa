@@ -1,3 +1,11 @@
+@font-face {
+  font-family: 'Unifont';
+  src: url('/fonts/unifont.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
   --neon-pink: #ff2b9d;
   --neon-blue: #00f3ff;
@@ -31,12 +39,13 @@ body {
 
 .title {
   font-size: 1.2rem;
-  margin: 0 0 1.5rem 0;
+  margin: 0;
   color: var(--neon-pink);
   letter-spacing: 0.2rem;
   text-align: center;
   position: relative;
   animation: crt-flicker 8s infinite;
+  font-family: 'Unifont', monospace;
 }
 
 .title::before,
@@ -221,6 +230,7 @@ body {
   gap: 1rem;
   font-size: 1.5rem;
   color: var(--neon-blue);
+  font-family: 'Unifont', monospace;
 }
 
 .small-text {
@@ -230,18 +240,17 @@ body {
 
 .ascii-output {
   padding: 0;
-  margin: 0;
+  margin: var(--ascii-margin-y, 0) var(--ascii-margin-x, 0);
   font-family: 'Courier New', monospace;
   font-size: var(--ascii-font-size, 12px);
   line-height: var(--ascii-line-height, 12px);
   display: block;
   text-align: center;
-  max-width: 100%;
-  max-height: 100%;
-  overflow: auto;
+  overflow: hidden;
   box-sizing: border-box;
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE and Edge */
+  white-space: pre;
+  transform: none;
+  position: relative;
 }
 
 /* Hide scrollbar for Chrome, Safari and Opera */
@@ -299,7 +308,7 @@ body {
   color: var(--neon-blue);
   padding: 0.5rem 1rem;
   cursor: pointer;
-  font-family: 'Courier New', monospace;
+  font-family: 'Unifont', monospace;
   font-size: 0.9rem;
   transition: all 0.3s ease;
   position: relative;
@@ -751,4 +760,24 @@ body {
 /* Keep the rest of the zoomed styles */
 .drop-zone:not(.zoomed) .ascii-output {
   cursor: zoom-in;
+}
+
+.credit {
+  font-family: 'Unifont', monospace;
+  color: var(--neon-blue);
+  opacity: 0.7;
+  margin-bottom: 1.5rem;
+  margin-top: 0;
+  font-size: 0.9rem;
+}
+
+.credit a {
+  color: var(--neon-pink);
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.credit a:hover {
+  opacity: 1;
+  text-shadow: 0 0 5px var(--neon-pink);
 }
