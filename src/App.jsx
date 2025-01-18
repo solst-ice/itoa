@@ -42,11 +42,13 @@ function App() {
   const [useColor, setUseColor] = useState(false)
   const [size, setSize] = useState(isMobileDevice() ? 'small' : 'medium')
   const fileInputRef = useRef(null)
+  const [isZoomed, setIsZoomed] = useState(false)
+  const [zoomLevel, setZoomLevel] = useState(1)
 
   const sizeMap = {
-    small: 150,
-    medium: 300,
-    large: 450
+    small: 60,
+    medium: 150,
+    large: 300
   }
 
   const convertToAscii = useCallback(async (file) => {
@@ -120,13 +122,16 @@ function App() {
       setColorAsciiArt(colorHtml)
       
       // Set font size
-      const maxWidth = dropZone.clientWidth - 40
-      const maxHeight = dropZone.clientHeight - 40
-      const fontScale = Math.min(
-        maxWidth / charWidth,
-        maxHeight / charHeight
-      )
-      const fontSize = Math.floor(fontScale * 2.5)
+      const maxWidth = dropZone.clientWidth - 20
+      const maxHeight = dropZone.clientHeight - 20
+
+      // Calculate font size based on available space and character dimensions
+      const horizontalFontSize = maxWidth / (charWidth * 0.6) // 0.6 is char width/height ratio
+      const verticalFontSize = maxHeight / charHeight
+
+      // Use the smaller of the two to ensure fit, but multiply by 0.95 for safety margin
+      const fontSize = Math.floor(Math.min(horizontalFontSize, verticalFontSize) * 0.95)
+
       document.documentElement.style.setProperty('--ascii-font-size', `${fontSize}px`)
       document.documentElement.style.setProperty('--ascii-line-height', `${fontSize}px`)
       
@@ -178,38 +183,52 @@ function App() {
     const ctx = canvas.getContext('2d')
     const asciiDiv = document.querySelector('.ascii-output')
     
-    // Set canvas size to match ASCII output
-    canvas.width = asciiDiv.offsetWidth
-    canvas.height = asciiDiv.offsetHeight
+    // Increase canvas size for better quality
+    const scale = 2 // Scale up for higher resolution
+    canvas.width = asciiDiv.offsetWidth * scale
+    canvas.height = asciiDiv.offsetHeight * scale
 
     // Draw background
     ctx.fillStyle = '#0a0a0f'
     ctx.fillRect(0, 0, canvas.width, canvas.height)
 
-    // Draw ASCII art
-    ctx.font = `${window.getComputedStyle(asciiDiv).fontSize} Courier New`
+    // Set up high quality text rendering
+    ctx.textRendering = 'geometricPrecision'
+    ctx.imageSmoothingEnabled = true
+    ctx.imageSmoothingQuality = 'high'
+    
+    // Scale everything up
+    ctx.scale(scale, scale)
+
+    // Draw ASCII art with improved settings
+    const fontSize = parseInt(window.getComputedStyle(asciiDiv).fontSize)
+    ctx.font = `bold ${fontSize}px "Courier New"`
     ctx.textBaseline = 'top'
+    ctx.textAlign = 'left'
 
     if (useColor) {
-      // For color mode, we need to parse the HTML and draw each colored character
+      // For color mode
       const tempDiv = document.createElement('div')
       tempDiv.innerHTML = colorAsciiArt
       const pre = tempDiv.querySelector('pre')
       const text = pre.textContent
       const lines = text.split('\n')
-      const fontSize = parseInt(window.getComputedStyle(asciiDiv).fontSize)
-      const charWidth = fontSize * 0.6 // Approximate width of monospace character
-      
+      const charWidth = fontSize * 0.6
+
       // Get all spans with their colors
       const spans = Array.from(pre.querySelectorAll('span'))
       let spanIndex = 0
 
-      // Draw line by line
+      // Draw line by line with improved contrast
       lines.forEach((line, lineIndex) => {
         for (let charIndex = 0; charIndex < line.length; charIndex++) {
           if (spanIndex < spans.length) {
             const span = spans[spanIndex]
-            ctx.fillStyle = span.style.color
+            // Brighten the colors slightly
+            const color = span.style.color
+            const rgb = color.match(/\d+/g)
+            const brightenedColor = `rgb(${Math.min(255, parseInt(rgb[0]) * 1.2)}, ${Math.min(255, parseInt(rgb[1]) * 1.2)}, ${Math.min(255, parseInt(rgb[2]) * 1.2)})`
+            ctx.fillStyle = brightenedColor
             ctx.fillText(
               span.textContent,
               charIndex * charWidth,
@@ -220,20 +239,18 @@ function App() {
         }
       })
     } else {
-      // For monochrome mode
+      // For monochrome mode with improved contrast
       ctx.fillStyle = '#ff2b9d'
       const lines = asciiArt.split('\n')
-      const fontSize = parseInt(window.getComputedStyle(asciiDiv).fontSize)
       lines.forEach((line, i) => {
         ctx.fillText(line, 0, i * fontSize)
       })
     }
 
+    // Create download with the high-res canvas
     if (isMobileDevice()) {
-      // For mobile devices: save to photo gallery
       canvas.toBlob((blob) => {
         try {
-          // Try the new Native Share API first
           if (navigator.share) {
             const file = new File([blob], 'ascii-art.png', { type: 'image/png' })
             navigator.share({
@@ -242,8 +259,7 @@ function App() {
               text: 'Created with ITOA'
             }).catch(console.error)
           } else {
-            // Fallback: try to save directly to gallery
-            const imageUrl = canvas.toDataURL('image/png')
+            const imageUrl = canvas.toDataURL('image/png', 1.0) // Max quality
             const link = document.createElement('a')
             link.download = 'ascii-art.png'
             link.href = imageUrl
@@ -251,21 +267,26 @@ function App() {
           }
         } catch (error) {
           console.error('Error saving image:', error)
-          // Fallback to normal download if sharing fails
           const link = document.createElement('a')
           link.download = 'ascii-art.png'
           link.href = URL.createObjectURL(blob)
           link.click()
           setTimeout(() => URL.revokeObjectURL(link.href), 100)
         }
-      }, 'image/png')
+      }, 'image/png', 1.0) // Max quality
     } else {
-      // For desktop: normal file download
       const link = document.createElement('a')
       link.download = 'ascii-art.png'
-      link.href = canvas.toDataURL('image/png')
+      link.href = canvas.toDataURL('image/png', 1.0) // Max quality
       link.click()
     }
+  }
+
+  const handleZoom = () => {
+    setZoomLevel(prev => {
+      if (prev >= 8) return 1
+      return prev * 2
+    })
   }
 
   // Add favicon animation
@@ -328,13 +349,24 @@ function App() {
         >
           Save
         </button>
+
+        {(asciiArt || colorAsciiArt) && (
+          <button
+            className="control-btn"
+            onClick={handleZoom}
+            data-text="Zoom"
+          >
+            {zoomLevel === 1 ? '🔍+' : `${zoomLevel}×`}
+          </button>
+        )}
       </div>
       
       <div
-        className={`drop-zone ${isDragging ? 'dragging' : ''}`}
+        className={`drop-zone ${isDragging ? 'dragging' : ''} ${zoomLevel > 1 ? 'zoomed' : ''}`}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
+        style={{ '--zoom-scale': zoomLevel }}
       >
         {(asciiArt || colorAsciiArt) ? (
           useColor ? (
