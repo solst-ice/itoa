@@ -45,6 +45,17 @@ function App() {
   const [isZoomed, setIsZoomed] = useState(false)
   const [zoomLevel, setZoomLevel] = useState(1)
 
+  // Monochrome color mapping
+  const monoColorMap = {
+    pink: '#ff2b9d',
+    white: '#FFFFFF',
+    cyan: '#00FFFF',
+    red: '#FF0000',
+    yellow: '#FFFF00',
+    purple: '#800080',
+  }
+  const [monoColorName, setMonoColorName] = useState('pink')
+
   const sizeMap = {
     small: 60,
     medium: 150,
@@ -191,6 +202,14 @@ function App() {
     }
   }
 
+  // Add a helper to cycle through monochrome colors
+  const cycleMonoColor = () => {
+    const colorNames = Object.keys(monoColorMap)
+    const currentIndex = colorNames.indexOf(monoColorName)
+    const nextIndex = (currentIndex + 1) % colorNames.length
+    setMonoColorName(colorNames[nextIndex])
+  }
+
   const handleSaveAscii = () => {
     if (!asciiArt && !colorAsciiArt) return
 
@@ -200,7 +219,7 @@ function App() {
     // Get the number of characters in width and height
     const lines = asciiArt.split('\n').filter(line => line.length > 0) // Remove empty lines
     const charHeight = lines.length
-    const charWidth = lines[0].length
+    const charWidth = lines[0].length 
 
     // Set a base scale for high resolution
     const baseScale = 32 // pixels per character
@@ -252,12 +271,22 @@ function App() {
         }
       })
     } else {
-      // For monochrome mode
-      ctx.fillStyle = '#ff2b9d'
-      lines.forEach((line, i) => {
-        ctx.fillText(line, 0, Math.round(i * fontSize))
-      })
+       // For monochrome mode, use the selected monoColor
+  const monoColor = monoColorMap[monoColorName] || 'pink'
+  ctx.fillStyle = monoColor
+
+  lines.forEach((line, lineIndex) => {
+    // Loop through each character
+    for (let charIndex = 0; charIndex < line.length; charIndex++) {
+      const char = line[charIndex]
+      ctx.fillText(
+        char,
+        Math.round(charIndex * fontSize * charAspectRatio),
+        Math.round(lineIndex * fontSize)
+      )
     }
+  })
+}
 
     // Save with max quality
     if (isMobileDevice()) {
@@ -325,12 +354,24 @@ function App() {
       </div>
       
       <div className="controls">
+        {/* Toggle between color or monochrome */}
         <button 
           className={`control-btn ${useColor ? 'active' : ''}`}
           onClick={() => setUseColor(prev => !prev)}
         >
           {useColor ? 'Colors' : 'Monochrome'}
         </button>
+
+        {/* Show monochrome color selector button only in monochrome mode */}
+        {!useColor && (
+          <button 
+            className="control-btn"
+            onClick={cycleMonoColor}
+            data-text={`MonoColor`}
+          >
+            Monochrome Color: {monoColorName}
+          </button>
+        )}
         
         <button
           className="control-btn"
@@ -390,7 +431,10 @@ function App() {
               dangerouslySetInnerHTML={{ __html: colorAsciiArt }}
             />
           ) : (
-            <pre className="ascii-output">
+            <pre 
+              className="ascii-output" 
+              style={{ color: monoColorMap[monoColorName] }}
+            >
               {asciiArt}
             </pre>
           )
