@@ -1,0 +1,16 @@
+
+services:
+  web:
+    # Build the image using our Dockerfile
+    build: .
+    
+    # Container name (optional)
+    container_name: itoa
+    
+    # Map port 80 in the container to port 80 on the host
+    ports:
+      - "1212:80"
+    
+    # (Optional) If you need environment variables, define them here:
+    # environment:
+    #   - SOME_ENV_VAR=foobar
